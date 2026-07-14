@@ -11,7 +11,6 @@
     />
     <title>Birthday Wish</title>
     <style>
-      /* Changed from '*' to body to prevent forcing the peach background onto candles and lines */
       body {
         margin: 0;
         background-color: #feefe5;
@@ -40,7 +39,6 @@
         color: #555;
       }
 
-      /* Styled start button */
       #startBtn {
         font-family: 'Pixelify Sans', sans-serif;
         font-size: 1.1rem;
@@ -72,6 +70,7 @@
         height: 200px;
         border-radius: 20px;
         box-shadow: 0 10px 0 #e57c74;
+        cursor: pointer; /* Visually hints that the cake can be interacted with */
       }
 
       .candle {
@@ -128,7 +127,6 @@
 
       const birthdayText = document.getElementById("birthdayText");
       
-      // Setup initial welcoming state with a button to satisfy user interaction rules
       birthdayText.innerHTML = `
         <div id="mainTitle">Happy Birthday, ${name}!</div>
         <div id="subTitle" style="margin-top: 15px;">
@@ -162,8 +160,8 @@
           const rowShift = row % 2 === 0 ? 0 : shiftAmount;
 
           candle.style.position = "absolute";
-          candle.style.top = `${10 + row * 18}px`; // Increased spacing so rows don't stack directly on top of each other
-          candle.style.left = `${leftBase * 8 - rowShift * 4 + 40}px`; // Adjusted math to match pixel scale perfectly
+          candle.style.top = `${10 + row * 18}px`; 
+          candle.style.left = `${leftBase * 8 - rowShift * 4 + 40}px`; 
 
           cake.appendChild(candle);
         }
@@ -171,9 +169,19 @@
 
       createCandles(candleCount);
 
-      // Start everything once the button is pressed
+      // Safe backup toggle
+      let handlesBlowLocally = false;
+      
+      // Let users tap or click the cake as a manual option if their system blocks microphones
+      cake.addEventListener("click", () => {
+        if (!handlesBlowLocally) {
+          handlesBlowLocally = true;
+          blowOutCandles();
+        }
+      });
+
       document.getElementById("startBtn").addEventListener("click", () => {
-        document.getElementById("subTitle").innerHTML = "<span style='color: #d1515a; font-weight: bold;'>Make a wish and blow hard into your mic! 🌬️</span>";
+        document.getElementById("subTitle").innerHTML = "<span style='color: #d1515a; font-weight: bold;'>Make a wish and blow hard into your mic! (Or tap the cake) 🌬️</span>";
         startMicDetection();
       });
 
@@ -181,8 +189,6 @@
       async function startMicDetection() {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          
-          // Instantiating the audio context inside this user gesture block unlocks the browser
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
           const source = audioContext.createMediaStreamSource(stream);
           const analyser = audioContext.createAnalyser();
@@ -190,31 +196,25 @@
 
           source.connect(analyser);
           const dataArray = new Uint8Array(analyser.frequencyBinCount);
-          let blown = false;
 
           function detectBlow() {
             analyser.getByteFrequencyData(dataArray);
 
-            // Sum up the overall volumes across the frequencies
             let sum = 0;
             for (let i = 0; i < dataArray.length; i++) {
               sum += dataArray[i];
             }
             const averageVolume = sum / dataArray.length;
 
-            // An average frequency energy over 45 indicates a firm puff of air
-            const VOLUME_THRESHOLD = 45; 
-
-            if (averageVolume > VOLUME_THRESHOLD && !blown) {
-              blown = true;
+            // Trigger blow event if sound intensity steps over standard ambiance rules
+            if (averageVolume > 45 && !handlesBlowLocally) {
+              handlesBlowLocally = true;
               blowOutCandles();
-              
-              // Cleanly disconnect mic to remove recording dot from user's tab
               stream.getTracks().forEach(track => track.stop());
               return; 
             }
 
-            if (!blown) {
+            if (!handlesBlowLocally) {
               requestAnimationFrame(detectBlow);
             }
           }
@@ -222,14 +222,14 @@
           detectBlow();
         } catch (err) {
           console.error("Mic access error:", err);
-          document.getElementById("subTitle").textContent = "Microphone access was denied or isn't supported.";
+          alert("Microphone stream could not connect. Ensure you are running this file via an HTTP Server environment (like Live Server) rather than double clicking a 'file:///' link! Fallback enabled: click the cake to blow out candles.");
         }
       }
 
       function blowOutCandles() {
         const candles = document.querySelectorAll(".candle");
         candles.forEach((candle) => {
-          const delay = Math.random() * 800; // Adds a lovely sequential wave extinguishing look
+          const delay = Math.random() * 800; 
           setTimeout(() => {
             candle.classList.add("blown");
           }, delay);
