@@ -11,84 +11,62 @@
     />
     <title>Birthday Wish</title>
     <style>
-      body {
+      * {
+        box-sizing: border-box;
         margin: 0;
+        padding: 0;
         background-color: #feefe5;
-        font-family: "Pixelify Sans", sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        overflow: hidden;
       }
 
       #birthdayText {
+        font-family: "Pixelify Sans", sans-serif;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-top: 100px;
       }
 
       #mainTitle {
-        font-size: 2.5rem;
-        color: #d1515a;
-        margin-bottom: 0.5rem;
+        font-size: 50px;
       }
 
       #subTitle {
-        font-size: 1.2rem;
-        color: #555;
-      }
-
-      #startBtn {
-        font-family: 'Pixelify Sans', sans-serif;
-        font-size: 1.1rem;
-        padding: 10px 20px;
-        background-color: #d1515a;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        box-shadow: 0 4px 0 #a03c43;
-        transition: transform 0.1s;
-      }
-
-      #startBtn:active {
-        transform: translateY(4px);
-        box-shadow: none;
+        font-size: 20px;
+        color: gray;
       }
 
       .canvas-container {
-        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 120px;
         image-rendering: pixelated;
       }
 
       #cake {
+        background-image: url("./cake.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        width: calc(35 * 10px);
+        height: calc(20 * 10px);
         position: relative;
-        background-color: #f7a399;
-        border: 4px solid #3d262a;
-        width: 350px;
-        height: 200px;
-        border-radius: 20px;
-        box-shadow: 0 10px 0 #e57c74;
-        cursor: pointer; /* Visually hints that the cake can be interacted with */
+        cursor: pointer;
       }
 
       .candle {
-        width: 14px;
-        height: 50px;
-        border: 3px solid #3d262a;
+        width: calc(2 * 10px);
+        height: calc(5 * 10px);
+        border: 4px solid black;
+        image-rendering: pixelated;
         position: absolute;
-        border-radius: 4px 4px 0 0;
       }
 
       .candle::before {
         content: "";
         position: absolute;
-        top: -15px;
-        left: 4px;
-        width: 6px;
-        height: 15px;
-        background-color: #ff9f1c;
+        top: -16px;
+        left: 2px;
+        width: 8px;
+        height: 12px;
+        background-color: orange;
         border-radius: 50% 50% 20% 20%;
         animation: flicker 0.1s infinite alternate;
       }
@@ -98,14 +76,29 @@
       }
 
       @keyframes flicker {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.1) rotate(2deg); }
+        0% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(1.1) rotate(3deg);
+        }
       }
 
-      .green-candle { background-color: #2ec4b6; }
-      .purple-candle { background-color: #9b5de5; }
-      .blue-candle { background-color: #00bbf9; }
-      .yellow-candle { background-color: #ffee32; }
+      .green-candle {
+        background-color: #a7c957;
+      }
+
+      .purple-candle {
+        background-color: #b388eb;
+      }
+
+      .blue-candle {
+        background-color: #a0c4ff;
+      }
+
+      .yellow-candle {
+        background-color: #fdffb6;
+      }
     </style>
   </head>
   <body>
@@ -119,7 +112,6 @@
     </div>
 
     <script>
-      // Read URL params
       const params = new URLSearchParams(window.location.search);
       const name = params.get("name") || "Friend";
       let candleCount = parseInt(params.get("candles")) || 4;
@@ -127,15 +119,23 @@
 
       const birthdayText = document.getElementById("birthdayText");
       
+      // Kept your style, just added a clean text button to trigger audio permissions safely
       birthdayText.innerHTML = `
         <div id="mainTitle">Happy Birthday, ${name}!</div>
         <div id="subTitle" style="margin-top: 15px;">
-          <button id="startBtn">Click to Light Candles & Enable Mic 🎂</button>
+          <button id="startBtn" style="font-family: 'Pixelify Sans', sans-serif; font-size: 18px; padding: 6px 12px; cursor: pointer;">
+            Click to light candles & start mic 🎂
+          </button>
         </div>
       `;
 
       const cake = document.getElementById("cake");
-      const colors = ["green-candle", "purple-candle", "blue-candle", "yellow-candle"];
+      const colors = [
+        "green-candle",
+        "purple-candle",
+        "blue-candle",
+        "yellow-candle",
+      ];
       const CAKE_VISUAL_WIDTH = 35;
 
       function createCandles(count) {
@@ -153,15 +153,18 @@
 
           const row = Math.floor(i / candlesPerRow);
           const col = i % candlesPerRow;
-          const totalCandlesInRow = Math.min(candlesPerRow, count - row * candlesPerRow);
+          const totalCandlesInRow = Math.min(
+            candlesPerRow,
+            count - row * candlesPerRow
+          );
           const rowSpacing = availableWidth / (totalCandlesInRow + 1);
 
           const leftBase = rowSpacing * (col + 1) - CANDLE_VISUAL_WIDTH / 2 + 5;
           const rowShift = row % 2 === 0 ? 0 : shiftAmount;
 
           candle.style.position = "absolute";
-          candle.style.top = `${10 + row * 18}px`; 
-          candle.style.left = `${leftBase * 8 - rowShift * 4 + 40}px`; 
+          candle.style.top = `${10 + row * 3}px`;
+          candle.style.left = `${leftBase - rowShift + 4}px`;
 
           cake.appendChild(candle);
         }
@@ -169,10 +172,9 @@
 
       createCandles(candleCount);
 
-      // Safe backup toggle
       let handlesBlowLocally = false;
-      
-      // Let users tap or click the cake as a manual option if their system blocks microphones
+
+      // Fallback: Clicking the cake will blow out the candles if the microphone breaks
       cake.addEventListener("click", () => {
         if (!handlesBlowLocally) {
           handlesBlowLocally = true;
@@ -181,7 +183,7 @@
       });
 
       document.getElementById("startBtn").addEventListener("click", () => {
-        document.getElementById("subTitle").innerHTML = "<span style='color: #d1515a; font-weight: bold;'>Make a wish and blow hard into your mic! (Or tap the cake) 🌬️</span>";
+        document.getElementById("subTitle").textContent = "Make a wish and blow hard into the mic! (Or click the cake)";
         startMicDetection();
       });
 
@@ -206,12 +208,12 @@
             }
             const averageVolume = sum / dataArray.length;
 
-            // Trigger blow event if sound intensity steps over standard ambiance rules
+            // Detect blow based on total sound amplitude crossing ambient threshold
             if (averageVolume > 45 && !handlesBlowLocally) {
               handlesBlowLocally = true;
               blowOutCandles();
               stream.getTracks().forEach(track => track.stop());
-              return; 
+              return;
             }
 
             if (!handlesBlowLocally) {
@@ -222,14 +224,14 @@
           detectBlow();
         } catch (err) {
           console.error("Mic access error:", err);
-          alert("Microphone stream could not connect. Ensure you are running this file via an HTTP Server environment (like Live Server) rather than double clicking a 'file:///' link! Fallback enabled: click the cake to blow out candles.");
+          alert("Could not open mic. Make sure you aren't running as a local file (file:///) and permissions are allowed! You can still click the cake to blow them out.");
         }
       }
 
       function blowOutCandles() {
         const candles = document.querySelectorAll(".candle");
         candles.forEach((candle) => {
-          const delay = Math.random() * 800; 
+          const delay = Math.random() * 1000;
           setTimeout(() => {
             candle.classList.add("blown");
           }, delay);
@@ -237,7 +239,7 @@
 
         setTimeout(() => {
           const subTitle = document.getElementById("subTitle");
-          subTitle.innerHTML = `<span style="font-size: 1.5rem; color: #2ec4b6; font-weight: bold;">Yayy! Wishing you the happiest birthday ever!! 🎉🍰</span>`;
+          subTitle.textContent = `Yayy! Wishing you the happiest birthday ever!! 🎉`;
         }, 1200);
       }
     </script>
