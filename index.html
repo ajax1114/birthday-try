@@ -2,35 +2,121 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Birthday Cake 🎂</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
       rel="stylesheet"
     />
+    <title>Birthday Wish</title>
     <style>
+      /* Changed from '*' to body to prevent forcing the peach background onto candles and lines */
+      body {
+        margin: 0;
+        background-color: #feefe5;
+        font-family: "Pixelify Sans", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      #birthdayText {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
       #mainTitle {
-        font-size: 32px;
-        font-family: 'Pixelify Sans', sans-serif;
-        margin-bottom: 8px;
+        font-size: 2.5rem;
+        color: #d1515a;
+        margin-bottom: 0.5rem;
       }
 
       #subTitle {
-        font-size: 18px;
-        font-family: 'Pixelify Sans', sans-serif;
+        font-size: 1.2rem;
         color: #555;
       }
+
+      /* Styled start button */
+      #startBtn {
+        font-family: 'Pixelify Sans', sans-serif;
+        font-size: 1.1rem;
+        padding: 10px 20px;
+        background-color: #d1515a;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #a03c43;
+        transition: transform 0.1s;
+      }
+
+      #startBtn:active {
+        transform: translateY(4px);
+        box-shadow: none;
+      }
+
+      .canvas-container {
+        position: relative;
+        image-rendering: pixelated;
+      }
+
+      #cake {
+        position: relative;
+        background-color: #f7a399;
+        border: 4px solid #3d262a;
+        width: 350px;
+        height: 200px;
+        border-radius: 20px;
+        box-shadow: 0 10px 0 #e57c74;
+      }
+
+      .candle {
+        width: 14px;
+        height: 50px;
+        border: 3px solid #3d262a;
+        position: absolute;
+        border-radius: 4px 4px 0 0;
+      }
+
+      .candle::before {
+        content: "";
+        position: absolute;
+        top: -15px;
+        left: 4px;
+        width: 6px;
+        height: 15px;
+        background-color: #ff9f1c;
+        border-radius: 50% 50% 20% 20%;
+        animation: flicker 0.1s infinite alternate;
+      }
+
+      .candle.blown::before {
+        display: none;
+      }
+
+      @keyframes flicker {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.1) rotate(2deg); }
+      }
+
+      .green-candle { background-color: #2ec4b6; }
+      .purple-candle { background-color: #9b5de5; }
+      .blue-candle { background-color: #00bbf9; }
+      .yellow-candle { background-color: #ffee32; }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div id="birthdayText"></div>
-      <div class="cake-container">
-        <div class="cake" id="cake"></div>
-      </div>
+    <div id="birthdayText">
+      <div id="mainTitle">Loading...</div>
+      <div id="subTitle"></div>
+    </div>
+
+    <div class="canvas-container">
+      <div id="cake"></div>
     </div>
 
     <script>
@@ -41,19 +127,17 @@
       candleCount = Math.min(Math.max(candleCount, 1), 30);
 
       const birthdayText = document.getElementById("birthdayText");
+      
+      // Setup initial welcoming state with a button to satisfy user interaction rules
       birthdayText.innerHTML = `
         <div id="mainTitle">Happy Birthday, ${name}!</div>
-        <div id="subTitle">Make a wish and blow candles.</div>
+        <div id="subTitle" style="margin-top: 15px;">
+          <button id="startBtn">Click to Light Candles & Enable Mic 🎂</button>
+        </div>
       `;
 
       const cake = document.getElementById("cake");
-
-      const colors = [
-        "green-candle",
-        "purple-candle",
-        "blue-candle",
-        "yellow-candle",
-      ];
+      const colors = ["green-candle", "purple-candle", "blue-candle", "yellow-candle"];
       const CAKE_VISUAL_WIDTH = 35;
 
       function createCandles(count) {
@@ -61,7 +145,6 @@
         const CANDLE_VISUAL_WIDTH = 2;
         const availableWidth = CAKE_VISUAL_WIDTH;
         const candlesPerRow = 6;
-        const rowCount = Math.ceil(count / candlesPerRow);
         const shiftAmount = 4;
 
         for (let i = 0; i < count; i++) {
@@ -72,18 +155,15 @@
 
           const row = Math.floor(i / candlesPerRow);
           const col = i % candlesPerRow;
-          const totalCandlesInRow = Math.min(
-            candlesPerRow,
-            count - row * candlesPerRow
-          );
+          const totalCandlesInRow = Math.min(candlesPerRow, count - row * candlesPerRow);
           const rowSpacing = availableWidth / (totalCandlesInRow + 1);
 
           const leftBase = rowSpacing * (col + 1) - CANDLE_VISUAL_WIDTH / 2 + 5;
           const rowShift = row % 2 === 0 ? 0 : shiftAmount;
 
           candle.style.position = "absolute";
-          candle.style.top = `${10 + row * 3}px`;
-          candle.style.left = `${leftBase - rowShift + 4}px`;
+          candle.style.top = `${10 + row * 18}px`; // Increased spacing so rows don't stack directly on top of each other
+          candle.style.left = `${leftBase * 8 - rowShift * 4 + 40}px`; // Adjusted math to match pixel scale perfectly
 
           cake.appendChild(candle);
         }
@@ -91,82 +171,75 @@
 
       createCandles(candleCount);
 
+      // Start everything once the button is pressed
+      document.getElementById("startBtn").addEventListener("click", () => {
+        document.getElementById("subTitle").innerHTML = "<span style='color: #d1515a; font-weight: bold;'>Make a wish and blow hard into your mic! 🌬️</span>";
+        startMicDetection();
+      });
+
       // === Microphone / Blow Detection ===
       async function startMicDetection() {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          const audioContext = new (window.AudioContext ||
-            window.webkitAudioContext)();
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          
+          // Instantiating the audio context inside this user gesture block unlocks the browser
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
           const source = audioContext.createMediaStreamSource(stream);
           const analyser = audioContext.createAnalyser();
           analyser.fftSize = 512;
 
           source.connect(analyser);
-
           const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
           let blown = false;
 
           function detectBlow() {
             analyser.getByteFrequencyData(dataArray);
 
-            let highFreqSum = 0;
-            let lowFreqSum = 0;
-
-            const midpoint = dataArray.length / 2;
-
+            // Sum up the overall volumes across the frequencies
+            let sum = 0;
             for (let i = 0; i < dataArray.length; i++) {
-              if (i < midpoint) {
-                lowFreqSum += dataArray[i];
-              } else {
-                highFreqSum += dataArray[i];
-              }
+              sum += dataArray[i];
             }
+            const averageVolume = sum / dataArray.length;
 
-            const highAvg = highFreqSum / (dataArray.length / 2);
-            const lowAvg = lowFreqSum / (dataArray.length / 2);
+            // An average frequency energy over 45 indicates a firm puff of air
+            const VOLUME_THRESHOLD = 45; 
 
-            const ratio = highAvg / (lowAvg + 1);
-
-            const BLOW_RATIO_THRESHOLD = 0.5;
-
-            if (ratio > BLOW_RATIO_THRESHOLD && !blown) {
+            if (averageVolume > VOLUME_THRESHOLD && !blown) {
               blown = true;
               blowOutCandles();
+              
+              // Cleanly disconnect mic to remove recording dot from user's tab
+              stream.getTracks().forEach(track => track.stop());
+              return; 
             }
 
-            requestAnimationFrame(detectBlow);
+            if (!blown) {
+              requestAnimationFrame(detectBlow);
+            }
           }
 
           detectBlow();
         } catch (err) {
           console.error("Mic access error:", err);
+          document.getElementById("subTitle").textContent = "Microphone access was denied or isn't supported.";
         }
       }
 
       function blowOutCandles() {
         const candles = document.querySelectorAll(".candle");
         candles.forEach((candle) => {
-          const delay = Math.random() * 1000;
+          const delay = Math.random() * 800; // Adds a lovely sequential wave extinguishing look
           setTimeout(() => {
-            colors.forEach((color) => {
-              if (candle.classList.contains(color)) {
-                candle.classList.add("blown");
-              }
-            });
+            candle.classList.add("blown");
           }, delay);
         });
 
-        // Update subTitle after short delay
         setTimeout(() => {
           const subTitle = document.getElementById("subTitle");
-          subTitle.textContent = `Yayy! Wishing you the happiest birthday ever!! 🎉`;
+          subTitle.innerHTML = `<span style="font-size: 1.5rem; color: #2ec4b6; font-weight: bold;">Yayy! Wishing you the happiest birthday ever!! 🎉🍰</span>`;
         }, 1200);
       }
-
-      startMicDetection();
     </script>
   </body>
 </html>
