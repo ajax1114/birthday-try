@@ -2,134 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Birthday Cake 🎂</title>
+    <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
       rel="stylesheet"
     />
-    <title>Birthday Wish</title>
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        background-color: #feefe5;
-      }
-
-      #birthdayText {
-        font-family: "Pixelify Sans", sans-serif;
-        text-align: center;
-        margin-top: 100px;
-      }
-
       #mainTitle {
-        font-size: 50px;
+        font-size: 32px;
+        font-family: 'Pixelify Sans', sans-serif;
+        margin-bottom: 8px;
       }
 
       #subTitle {
-        font-size: 20px;
-        color: gray;
-      }
-
-      .canvas-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 120px;
-        image-rendering: pixelated;
-      }
-
-      #cake {
-        background-image: url("./cake.png");
-        background-size: contain;
-        background-repeat: no-repeat;
-        width: calc(35 * 10px);
-        height: calc(20 * 10px);
-        position: relative;
-        cursor: pointer;
-      }
-
-      .candle {
-        width: calc(2 * 10px);
-        height: calc(5 * 10px);
-        border: 4px solid black;
-        image-rendering: pixelated;
-        position: absolute;
-      }
-
-      .candle::before {
-        content: "";
-        position: absolute;
-        top: -16px;
-        left: 2px;
-        width: 8px;
-        height: 12px;
-        background-color: orange;
-        border-radius: 50% 50% 20% 20%;
-        animation: flicker 0.1s infinite alternate;
-      }
-
-      .candle.blown::before {
-        display: none;
-      }
-
-      @keyframes flicker {
-        0% {
-          transform: scale(1);
-        }
-        100% {
-          transform: scale(1.1) rotate(3deg);
-        }
-      }
-
-      .green-candle {
-        background-color: #a7c957;
-      }
-
-      .purple-candle {
-        background-color: #b388eb;
-      }
-
-      .blue-candle {
-        background-color: #a0c4ff;
-      }
-
-      .yellow-candle {
-        background-color: #fdffb6;
+        font-size: 18px;
+        font-family: 'Pixelify Sans', sans-serif;
+        color: #555;
       }
     </style>
   </head>
   <body>
-    <div id="birthdayText">
-      <div id="mainTitle">Loading...</div>
-      <div id="subTitle"></div>
-    </div>
-
-    <div class="canvas-container">
-      <div id="cake"></div>
+    <div class="container">
+      <div id="birthdayText"></div>
+      <div class="cake-container">
+        <div class="cake" id="cake"></div>
+      </div>
     </div>
 
     <script>
+      // Read URL params
       const params = new URLSearchParams(window.location.search);
       const name = params.get("name") || "Friend";
       let candleCount = parseInt(params.get("candles")) || 4;
       candleCount = Math.min(Math.max(candleCount, 1), 30);
 
       const birthdayText = document.getElementById("birthdayText");
-      
-      // Kept your style, just added a clean text button to trigger audio permissions safely
       birthdayText.innerHTML = `
         <div id="mainTitle">Happy Birthday, ${name}!</div>
-        <div id="subTitle" style="margin-top: 15px;">
-          <button id="startBtn" style="font-family: 'Pixelify Sans', sans-serif; font-size: 18px; padding: 6px 12px; cursor: pointer;">
-            Click to light candles & start mic 🎂
-          </button>
-        </div>
+        <div id="subTitle">Click anywhere to light candles and start mic 🎂</div>
       `;
 
       const cake = document.getElementById("cake");
+
       const colors = [
         "green-candle",
         "purple-candle",
@@ -143,6 +61,7 @@
         const CANDLE_VISUAL_WIDTH = 2;
         const availableWidth = CAKE_VISUAL_WIDTH;
         const candlesPerRow = 6;
+        const rowCount = Math.ceil(count / candlesPerRow);
         const shiftAmount = 4;
 
         for (let i = 0; i < count; i++) {
@@ -172,51 +91,66 @@
 
       createCandles(candleCount);
 
-      let handlesBlowLocally = false;
-
-      // Fallback: Clicking the cake will blow out the candles if the microphone breaks
-      cake.addEventListener("click", () => {
-        if (!handlesBlowLocally) {
-          handlesBlowLocally = true;
-          blowOutCandles();
-        }
-      });
-
-      document.getElementById("startBtn").addEventListener("click", () => {
-        document.getElementById("subTitle").textContent = "Make a wish and blow hard into the mic! (Or click the cake)";
-        startMicDetection();
-      });
-
       // === Microphone / Blow Detection ===
+      let micStarted = false;
+
+      // Unlocks AudioContext on user interaction to satisfy browser security
+      function handleUserGesture() {
+        if (micStarted) return;
+        micStarted = true;
+        
+        const subTitle = document.getElementById("subTitle");
+        subTitle.innerHTML = "<span style='color: #d1515a;'>Make a wish and blow hard! 🌬️</span>";
+        
+        startMicDetection();
+        
+        window.removeEventListener("click", handleUserGesture);
+        window.removeEventListener("touchstart", handleUserGesture);
+      }
+
+      window.addEventListener("click", handleUserGesture);
+      window.addEventListener("touchstart", handleUserGesture);
+
       async function startMicDetection() {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
           const source = audioContext.createMediaStreamSource(stream);
           const analyser = audioContext.createAnalyser();
           analyser.fftSize = 512;
 
           source.connect(analyser);
+
           const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+          let blown = false;
 
           function detectBlow() {
             analyser.getByteFrequencyData(dataArray);
 
+            // Sum overall volume levels (blowing on a mic causes a low frequency pressure wave)
             let sum = 0;
             for (let i = 0; i < dataArray.length; i++) {
               sum += dataArray[i];
             }
             const averageVolume = sum / dataArray.length;
 
-            // Detect blow based on total sound amplitude crossing ambient threshold
-            if (averageVolume > 45 && !handlesBlowLocally) {
-              handlesBlowLocally = true;
+            // A volume value above 45 indicates a puff of air blowing past the mic capsule
+            const BLOW_THRESHOLD = 45;
+
+            if (averageVolume > BLOW_THRESHOLD && !blown) {
+              blown = true;
               blowOutCandles();
+              
+              // Stop mic stream once candles are out to dismiss the browser's recording icon
               stream.getTracks().forEach(track => track.stop());
               return;
             }
 
-            if (!handlesBlowLocally) {
+            if (!blown) {
               requestAnimationFrame(detectBlow);
             }
           }
@@ -224,7 +158,8 @@
           detectBlow();
         } catch (err) {
           console.error("Mic access error:", err);
-          alert("Could not open mic. Make sure you aren't running as a local file (file:///) and permissions are allowed! You can still click the cake to blow them out.");
+          const subTitle = document.getElementById("subTitle");
+          subTitle.textContent = "Mic access blocked. Please allow mic permissions in your browser.";
         }
       }
 
@@ -233,10 +168,15 @@
         candles.forEach((candle) => {
           const delay = Math.random() * 1000;
           setTimeout(() => {
-            candle.classList.add("blown");
+            colors.forEach((color) => {
+              if (candle.classList.contains(color)) {
+                candle.classList.add("blown");
+              }
+            });
           }, delay);
         });
 
+        // Update subTitle after short delay
         setTimeout(() => {
           const subTitle = document.getElementById("subTitle");
           subTitle.textContent = `Yayy! Wishing you the happiest birthday ever!! 🎉`;
