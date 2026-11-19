@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Birthday Cake 🎂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bg-color: #fff5f7;
+      --bg-dots: #ffdce5;
+      --text-primary: #4a1c2d;
+      --text-secondary: #8a425b;
+      --outline: #a61e4d;
+      --accent: #e64980;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      image-rendering: pixelated;
+    }
+
+    body {
+      font-family: 'Pixelify Sans', sans-serif;
+      background-color: var(--bg-color);
+      background-image: radial-gradient(var(--bg-dots) 2px, transparent 2px);
+      background-size: 24px 24px;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 16px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+      z-index: 10;
+    }
+
+    /* Header Card */
+    #birthdayText {
+      padding: 12px 20px;
+      background: #ffffff;
+      border: 4px solid var(--outline);
+      box-shadow: 6px 6px 0px #f783ac;
+      width: 100%;
+    }
+
+    #mainTitle {
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 6px;
+      color: #c2255c;
+      text-shadow: 2px 2px 0px #ffdeeb;
+    }
+
+    #subTitle {
+      font-size: clamp(15px, 3.8vw, 18px);
+      color: var(--text-secondary);
+      min-height: 22px;
+    }
+
+    /* Mic Meter Bar */
+    .mic-status-bar {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .mic-status-bar.active {
+      display: flex;
+    }
+
+    .meter-track {
+      width: 130px;
+      height: 12px;
+      background: #fff0f6;
+      border: 2px solid var(--outline);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: #40c057;
+      transition: width 0.05s linear, background-color 0.1s;
+    }
+
+    /* Pixel Cake Canvas Stage */
+    .cake-stage {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 0;
+    }
+
+    #cakeCanvas {
+      width: min(340px, 88vw);
+      height: auto;
+      aspect-ratio: 1 / 1;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: drop-shadow(0 8px 0 rgba(166, 30, 77, 0.14));
+    }
+
+    /* Birthday Wish Reveal Card */
+    .wish-card {
+      width: 100%;
+      background: #ffffff;
+      border: 4px solid var(--outline);
+      box-shadow: 6px 6px 0px #f783ac;
+      padding: 18px 20px;
+      text-align: center;
+      animation: popIn 0.35s steps(4) forwards;
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.88) translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .wish-badge {
+      display: inline-block;
+      background: #ffdeeb;
+      color: #a61e4d;
+      border: 2px solid var(--outline);
+      padding: 2px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .wish-greeting {
+      font-size: clamp(20px, 5vw, 26px);
+      font-weight: 700;
+      color: #c2255c;
+      margin-bottom: 8px;
+    }
+
+    .wish-body {
+      font-size: clamp(16px, 4vw, 19px);
+      line-height: 1.45;
+      color: #4a1c2d;
+      background: #fff9db;
+      border: 3px dashed #f59f00;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Action Buttons */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .pixel-btn {
+      font-family: 'Pixelify Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 10px 16px;
+      background: #ffdeeb;
+      color: #a61e4d;
+      border: 3px solid var(--outline);
+      box-shadow: 4px 4px 0px var(--outline);
+      cursor: pointer;
+      transition: transform 0.05s, box-shadow 0.05s;
+    }
+
+    .pixel-btn:hover {
+      background: #fcc2d7;
+    }
+
+    .pixel-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px var(--outline);
+    }
+
+    .pixel-btn.primary {
+      background: #ffd43b;
+      color: #4a1c2d;
+    }
+
+    .pixel-btn.primary:hover {
+      background: #fcc419;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="container">
+    <div id="birthdayText"></div>
+
+    <div class="cake-stage">
+      <!-- 96x96 crisp pixel-art canvas scaled cleanly with pixelated rendering -->
+      <canvas id="cakeCanvas" width="96" height="96"></canvas>
+    </div>
+
+    <!-- Celebratory Birthday Wish Card (Appears when candles are blown out) -->
+    <div id="wishCard" class="wish-card hidden">
+      <div class="wish-badge">✨ MAKE A WISH COME TRUE ✨</div>
+      <div class="wish-greeting" id="wishGreeting"></div>
+      <div class="wish-body" id="wishBody"></div>
+
+      <div class="controls">
+        <button id="relightBtn" class="pixel-btn primary">🔥 Relight Candles</button>
+      </div>
+    </div>
+
+    <div class="controls" id="initialControls">
+      <button id="startMicBtn" class="pixel-btn primary">🎤 Light Candles & Enable Mic</button>
+      <button id="blowFallbackBtn" class="pixel-btn">💨 Blow Candles (or Space)</button>
+    </div>
+  </div>
+
+  <script>
+    // === 1. Parse URL Parameters ===
+    const params = new URLSearchParams(window.location.search);
+    let recipientName = (params.get("name") || "Friend").trim() || "Friend";
+    const defaultWish =
+      "May your special day be as sweet as strawberry frosting, filled with laughter, love, and every dream your heart wishes for! 🍓🎀🎂";
+    let customWish = (params.get("wish") || defaultWish).trim() || defaultWish;
+
+    let candleCount = parseInt(params.get("candles"), 10);
+    if (isNaN(candleCount)) candleCount = 3; // Matches the 3 candles in the reference image
+    candleCount = Math.min(Math.max(candleCount, 1), 10);
+
+    // === 2. Populate Header & Wish Card ===
+    const birthdayText = document.getElementById("birthdayText");
+    birthdayText.innerHTML = `
+      <div id="mainTitle">Happy Birthday, <span id="headerName"></span>!</div>
+      <div id="subTitle">Tap anywhere or click below to light candles & start mic 🎂</div>
+      <div class="mic-status-bar" id="micStatusBar">
+        <span>Breath:</span>
+        <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
+      </div>
+    `;
+
+    const headerNameEl = document.getElementById("headerName");
+    const subTitle = document.getElementById("subTitle");
+    const micStatusBar = document.getElementById("micStatusBar");
+    const meterFill = document.getElementById("meterFill");
+    const wishCard = document.getElementById("wishCard");
+    const wishGreeting = document.getElementById("wishGreeting");
+    const wishBody = document.getElementById("wishBody");
+    const initialControls = document.getElementById("initialControls");
+    const startMicBtn = document.getElementById("startMicBtn");
+    const blowFallbackBtn = document.getElementById("blowFallbackBtn");
+    const relightBtn = document.getElementById("relightBtn");
+
+    function syncWishDisplay() {
+      headerNameEl.textContent = recipientName;
+      wishGreeting.textContent = `Happy Birthday, ${recipientName}! 🎉`;
+      wishBody.textContent = customWish;
+    }
+    syncWishDisplay();
+
+    // === 3. Crisp Pixel-Art Renderer for the 3-Tier Strawberry Bow Cake ===
+    const cakeCanvas = document.getElementById("cakeCanvas");
+    const cctx = cakeCanvas.getContext("2d");
+    cctx.imageSmoothingEnabled = false;
+
+    // Color Palette matching reference image_b55e85.png
+    const PAL = {
+      outDark: "#b5173e",    // Crisp crimson-pink pixel outline
+      outMid: "#d6336c",     // Secondary outline
+      pinkLight: "#ffe3ec",  // Highlight pink
+      pinkBase: "#ffc2d4",   // Main pastel pink sponge
+      pinkMid: "#ff9ebb",    // Mid-tone shading
+      pinkDeep: "#f7729e",   // Deep tier shadow
+      pearlHi: "#ffffff",    // Pearl specular highlight
+      pearlMid: "#f06595",   // Pearl base
+      pearlDark: "#a61e4d",  // Pearl shadow
+      creamHi: "#ffffff",    // Whipped cream top
+      creamBase: "#fff8eb",  // Warm cream frosting
+      creamShad: "#f3d9b1",  // Cream scalloped under-shadow
+      goldRim: "#fcc419",    // Top tier golden-yellow trim
+      goldDark: "#e67700",   // Top tier amber accent
+      berryRed: "#e03131",   // Strawberry red
+      berryHi: "#ff8787",    // Strawberry highlight
+      berryDark: "#a61e4d",  // Strawberry shadow
+      leafGreen: "#2f9e44",  // Strawberry green leaf
+      leafLight: "#69db7c",  // Leaf highlight
+      candleBlue: "#6769b5", // Periwinkle-purple candle body
+      candleHi: "#9b9ef0",   // Candle highlight
+      candleDark: "#3b3d7a", // Candle shadow
+      flameOut: "#ff922b",   // Flame outer orange-gold
+      flameMid: "#ffd43b",   // Flame bright yellow
+      flameCore: "#ffffff",  // Flame white hot core
+      smokeLight: "#dee2e6", // Smoke puff light
+      smokeMid: "#adb5bd"    // Smoke puff mid
+    };
+
+    function px(x, y, w, h, color) {
+      cctx.fillStyle = color;
+      cctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+    }
+
+    // Candle state objects
+    let candlesState = [];
+    let smokeParticles = [];
+    let animTick = 0;
+
+    function initCandlesState() {
+      candlesState = [];
+      smokeParticles = [];
+      // Top tier surface is centered at x=48, y=22, width=22 (x: 37..59)
+      if (candleCount === 3) {
+        // Exact layout from reference image: 3 candles, center slightly higher
+        candlesState = [
+          { x: 42, baseY: 22, h: 7, lit: true, phase: 0 },
+          { x: 48, baseY: 21, h: 8, lit: true, phase: 1.7 },
+          { x: 54, baseY: 22, h: 7, lit: true, phase: 3.1 }
+        ];
+      } else {
+        const span = 18;
+        for (let i = 0; i < candleCount; i++) {
+          const frac = candleCount === 1 ? 0.5 : i / (candleCount - 1);
+          const cx = Math.round(39 + frac * span);
+          const isMiddle = Math.abs(frac - 0.5) < 0.16;
+          candlesState.push({
+            x: cx,
+            baseY: isMiddle ? 21 : 22,
+            h: isMiddle ? 8 : 7,
+            lit: true,
+            phase: i * 1.1
+          });
+        }
+      }
+    }
+    initCandlesState();
+
+    function drawCakeFrame(tick) {
+      cctx.clearRect(0, 0, 96, 96);
+
+      // ==========================================
+      // 1. BOTTOM TIER (Wide Pastel Pink + Pearls + Strawberries)
+      // ==========================================
+      // Main body (x: 27..69, y: 63..86)
+      px(28, 63, 40, 23, PAL.pinkBase);
+      // Right-side shading & bottom rounded shading
+      px(61, 63, 7, 23, PAL.pinkMid);
+      px(65, 65, 3, 20, PAL.pinkDeep);
+      px(28, 82, 40, 4, PAL.pinkMid);
+      px(30, 84, 36, 2, PAL.pinkDeep);
+      // Left highlight
+      px(29, 64, 3, 19, PAL.pinkLight);
+
+      // Bottom tier outlines
+      px(27, 63, 1, 21, PAL.outDark);
+      px(68, 63, 1, 21, PAL.outDark);
+      px(28, 84, 2, 1, PAL.outDark);
+      px(66, 84, 2, 1, PAL.outDark);
+      px(30, 85, 4, 1, PAL.outDark);
+      px(62, 85, 4, 1, PAL.outDark);
+      px(34, 86, 28, 1, PAL.outDark);
+
+      // Glossy dark-pink pearl dots along the bottom rim
+      const pearlXs = [27, 32, 37, 42, 47, 52, 57, 62, 67];
+      pearlXs.forEach((bx, idx) => {
+        const by = idx === 0 || idx === pearlXs.length - 1 ? 77 : 80;
+        px(bx - 1, by, 3, 3, PAL.pearlDark);
+        px(bx - 1, by, 2, 2, PAL.pearlMid);
+        px(bx - 1, by, 1, 1, PAL.pearlHi);
+      });
+
+      // Bottom tier scalloped cream frosting top (y: 54..66)
+      px(28, 54, 40, 9, PAL.creamBase);
+      px(29, 53, 38, 2, PAL.creamHi);
+      px(27, 56, 42, 6, PAL.creamBase);
+      // Cream top outline
+      px(29, 52, 38, 1, PAL.outDark);
+      px(27, 53, 2, 1, PAL.outDark);
+      px(67, 53, 2, 1, PAL.outDark);
+      px(26, 54, 1, 8, PAL.outDark);
+      px(69, 54, 1, 8, PAL.outDark);
+
+      // Scalloped cream waves hanging over bottom tier
+      for (let sx = 27; sx <= 65; sx += 6) {
+        px(sx, 62, 5, 2, PAL.creamBase);
+        px(sx + 1, 64, 3, 1, PAL.creamShad);
+        px(sx, 64, 1, 1, PAL.outMid);
+        px(sx + 4, 64, 1, 1, PAL.outMid);
+        px(sx + 1, 65, 3, 1, PAL.outMid);
+      }
+
+      // Red strawberries with green leaves nestled in bottom tier cream
+      const strawXs = [36, 44, 52, 60];
+      strawXs.forEach((sx) => {
+        // Berry body
+        px(sx, 57, 4, 4, PAL.berryRed);
+        px(sx + 1, 61, 2, 1, PAL.berryDark);
+        px(sx, 58, 1, 1, PAL.berryHi);
+        // Green leaves on top
+        px(sx, 56, 4, 1, PAL.leafGreen);
+        px(sx + 1, 55, 2, 1, PAL.leafLight);
+      });
+
+      // ==========================================
+      // 2. MIDDLE TIER (Medium Pastel Pink + Cream Scallops + Berries)
+      // ==========================================
+      // Body (x: 32..64, y: 41..54)
+      px(32, 41, 32, 13, PAL.pinkBase);
+      px(58, 41, 6, 13, PAL.pinkMid);
+      px(61, 42, 3, 12, PAL.pinkDeep);
+      px(33, 42, 3, 11, PAL.pinkLight);
+      px(32, 53, 32, 1, PAL.outMid); // Tier seam
+
+      // Middle tier side outlines
+      px(31, 41, 1, 12, PAL.outDark);
+      px(64, 41, 1, 12, PAL.outDark);
+
+      // Middle tier cream frosting top (y: 33..43)
+      px(32, 34, 32, 8, PAL.creamBase);
+      px(33, 33, 30, 2, PAL.creamHi);
+      px(31, 36, 34, 5, PAL.creamBase);
+      // Cream outline
+      px(33, 32, 30, 1, PAL.outDark);
+      px(31, 33, 2, 1, PAL.outDark);
+      px(63, 33, 2, 1, PAL.outDark);
+      px(30, 34, 1, 7, PAL.outDark);
+      px(65, 34, 1, 7, PAL.outDark);
+
+      // Middle scalloped waves
+      for (let sx = 31; sx <= 61; sx += 6) {
+        px(sx, 41, 5, 2, PAL.creamBase);
+        px(sx + 1, 43, 3, 1, PAL.creamShad);
+        px(sx + 1, 44, 3, 1, PAL.outMid);
+      }
+
+      // Red berry dots along middle tier cream
+      const midBerries = [34, 41, 48, 55, 61];
+      midBerries.forEach((bx) => {
+        px(bx, 38, 2, 2, PAL.berryRed);
+        px(bx, 38, 1, 1, PAL.berryHi);
+      });
+
+      // ==========================================
+      // 3. TOP TIER (Small Pink Tier + Cream + Golden Rim)
+      // ==========================================
+      // Body (x: 37..59, y: 26..33)
+      px(37, 26, 22, 7, PAL.pinkBase);
+      px(54, 26, 5, 7, PAL.pinkMid);
+      px(57, 26, 2, 7, PAL.pinkDeep);
+      px(38, 26, 2, 6, PAL.pinkLight);
+      px(37, 32, 22, 1, PAL.outMid);
+
+      // Top tier side outlines
+      px(36, 26, 1, 7, PAL.outDark);
+      px(59, 26, 1, 7, PAL.outDark);
+
+      // Top cream & golden-yellow rim (y: 21..26)
+      px(37, 21, 22, 4, PAL.creamBase);
+      px(38, 20, 20, 2, PAL.creamHi);
+      // Golden yellow accent trim
+      px(36, 25, 24, 1, PAL.goldRim);
+      px(37, 26, 22, 1, PAL.goldDark);
+      // Top cream outline
+      px(38, 20, 20, 1, PAL.outDark);
+      px(36, 21, 2, 1, PAL.outDark);
+      px(58, 21, 2, 1, PAL.outDark);
+      px(35, 22, 1, 4, PAL.outDark);
+      px(60, 22, 1, 4, PAL.outDark);
+
+      // Tiny red berry dots on top tier
+      [39, 45, 51, 56].forEach((tx) => {
+        px(tx, 22, 2, 2, PAL.berryRed);
+      });
+
+      // ==========================================
+      // 4. LARGE PASTEL-PINK RIBBON BOW (Left Side)
+      // ==========================================
+      // Left upper loop (x: 25..33, y: 44..54)
+      px(26, 44, 6, 10, PAL.pinkBase);
+      px(27, 45, 4, 5, PAL.pinkLight);
+      px(28, 46, 2, 2, PAL.pearlHi);
+      px(25, 45, 1, 8, PAL.outDark);
+      px(26, 44, 5, 1, PAL.outDark);
+      px(31, 45, 2, 7, PAL.outDark);
+
+      // Far-left outer loop (x: 18..28, y: 53..63)
+      px(19, 54, 9, 8, PAL.pinkBase);
+      px(20, 55, 6, 4, PAL.pinkLight);
+      px(21, 56, 2, 2, PAL.pearlHi);
+      px(19, 60, 8, 2, PAL.pinkMid);
+      px(19, 53, 8, 1, PAL.outDark);
+      px(18, 54, 1, 8, PAL.outDark);
+      px(19, 62, 8, 1, PAL.outDark);
+
+      // Right ribbon loop overlapping cake (x: 30..39, y: 54..62)
+      px(30, 54, 8, 7, PAL.pinkBase);
+      px(31, 55, 5, 3, PAL.pinkLight);
+      px(30, 59, 8, 2, PAL.pinkDeep);
+      px(30, 53, 8, 1, PAL.outDark);
+      px(38, 54, 1, 7, PAL.outDark);
+      px(30, 61, 8, 1, PAL.outDark);
+
+      // Center bow knot (x: 27..31, y: 53..58)
+      px(27, 53, 4, 5, PAL.pinkMid);
+      px(28, 54, 2, 2, PAL.pearlHi);
+      px(27, 52, 4, 1, PAL.outDark);
+      px(26, 53, 1, 5, PAL.outDark);
+      px(31, 53, 1, 5, PAL.outDark);
+      px(27, 58, 4, 1, PAL.outDark);
+
+      // Dangling ribbon tails (left & inner)
+      // Left tail (x: 22..26, y: 62..72)
+      px(23, 62, 3, 9, PAL.pinkBase);
+      px(23, 62, 1, 8, PAL.pinkLight);
+      px(25, 62, 1, 9, PAL.pinkDeep);
+      px(22, 62, 1, 9, PAL.outDark);
+      px(26, 62, 1, 9, PAL.outDark);
+      px(23, 71, 3, 1, PAL.outDark);
+
+      // Right angled tail (x: 28..32, y: 61..67)
+      px(28, 61, 3, 5, PAL.pinkMid);
+      px(29, 61, 1, 4, PAL.pinkLight);
+      px(27, 61, 1, 5, PAL.outDark);
+      px(31, 61, 1, 5, PAL.outDark);
+      px(28, 66, 3, 1, PAL.outDark);
+
+      // ==========================================
+      // 5. CANDLES, FLICKERING FLAMES & SMOKE
+      // ==========================================
+      candlesState.forEach((c) => {
+        const topY = c.baseY - c.h;
+
+        // Periwinkle-blue/purple pixel candle body
+        px(c.x - 1, topY, 3, c.h, PAL.candleBlue);
+        px(c.x - 1, topY, 1, c.h, PAL.candleHi);
+        px(c.x + 1, topY, 1, c.h, PAL.candleDark);
+
+        // Wick
+        px(c.x, topY - 1, 1, 1, PAL.outDark);
+
+        if (c.lit) {
+          // Animated pixel flame (flickers gently every few frames)
+          const flicker = Math.floor((tick * 0.22 + c.phase) % 3);
+          const fy = topY - 8;
+
+          // Outer orange-gold halo
+          px(c.x - 1, fy + 1, 3, 6, PAL.flameOut);
+          px(c.x, fy + (flicker === 1 ? -1 : 0), 1, 7, PAL.flameOut);
+
+          if (flicker !== 2) {
+            px(c.x - 2, fy + 3, 1, 3, PAL.flameOut);
+            px(c.x + 2, fy + 3, 1, 3, PAL.flameOut);
+          }
+
+          // Bright yellow inner flame
+          px(c.x - 1, fy + 2, 3, 4, PAL.flameMid);
+          px(c.x, fy + 1, 1, 5, PAL.flameMid);
+
+          // White core pixel
+          px(c.x, fy + 3, 1, 3, PAL.flameCore);
+        }
+      });
+
+      // Update & draw pixel smoke puffs when blown out
+      for (let i = smokeParticles.length - 1; i >= 0; i--) {
+        const sp = smokeParticles[i];
+        sp.y -= 0.25;
+        sp.x += Math.sin(sp.age * 0.25) * 0.15;
+        sp.age++;
+
+        if (sp.age > 45) {
+          smokeParticles.splice(i, 1);
+          continue;
+        }
+
+        const color = sp.age < 22 ? PAL.smokeLight : PAL.smokeMid;
+        px(Math.round(sp.x), Math.round(sp.y), sp.size, sp.size, color);
+      }
+    }
+
+    function renderLoop() {
+      animTick++;
+      drawCakeFrame(animTick);
+      requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
+
+    // === 4. Microphone Blow Detection & Interactive Controls ===
+    let micStarted = false;
+    let candlesBlown = false;
+    let activeStream = null;
+    let audioCtx = null;
+    let micAnimFrameId = null;
+
+    function activateMicExperience(e) {
+      if (e && e.target && e.target.closest("button, input, textarea")) return;
+      if (micStarted || candlesBlown) return;
+
+      micStarted = true;
+      startMicBtn.classList.add("hidden");
+      subTitle.innerHTML =
+        "<span style='color: #c2255c; font-weight: 700;'>Make a wish & blow into your mic! 🌬️</span>";
+      startMicDetection();
+
+      window.removeEventListener("click", activateMicExperience);
+      window.removeEventListener("touchstart", activateMicExperience);
+    }
+
+    window.addEventListener("click", activateMicExperience);
+    window.addEventListener("touchstart", activateMicExperience);
+    startMicBtn.addEventListener("click", () => {
+      if (!micStarted && !candlesBlown) {
+        micStarted = true;
+        startMicBtn.classList.add("hidden");
+        subTitle.innerHTML =
+          "<span style='color: #c2255c; font-weight: 700;'>Make a wish & blow into your mic! 🌬️</span>";
+        startMicDetection();
+      }
+    });
+
+    // Fallback blow button & Spacebar support
+    blowFallbackBtn.addEventListener("click", () => {
+      if (!candlesBlown) {
+        stopMicStream();
+        blowOutCandles();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (
+        e.code === "Space" &&
+        !candlesBlown &&
+        document.activeElement.tagName !== "INPUT" &&
+        document.activeElement.tagName !== "TEXTAREA"
+      ) {
+        e.preventDefault();
+        stopMicStream();
+        blowOutCandles();
+      }
+    });
+
+    // Relight candles button
+    relightBtn.addEventListener("click", () => {
+      candlesBlown = false;
+      micStarted = true;
+      wishCard.classList.add("hidden");
+      initialControls.classList.remove("hidden");
+      startMicBtn.classList.add("hidden");
+      initCandlesState();
+      subTitle.innerHTML =
+        "<span style='color: #c2255c; font-weight: 700;'>Candles relit! Blow again! 🌬️</span>";
+      startMicDetection();
+    });
+
+    async function startMicDetection() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        subTitle.textContent = "Mic unavailable — click 'Blow Candles' or press Space! 💨";
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+
+        activeStream = stream;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") {
+          await audioCtx.resume();
+        }
+
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.3;
+
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        micStatusBar.classList.add("active");
+
+        let sustainedFrames = 0;
+
+        function detectBlow() {
+          if (candlesBlown) return;
+
+          analyser.getByteFrequencyData(dataArray);
+
+          // Focus on low-to-mid frequencies where air puff energy concentrates
+          let lowSum = 0;
+          const lowBins = Math.min(40, dataArray.length);
+          for (let i = 0; i < lowBins; i++) {
+            lowSum += dataArray[i];
+          }
+          const lowAvg = lowSum / lowBins;
+
+          let totalSum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            totalSum += dataArray[i];
+          }
+          const overallAvg = totalSum / dataArray.length;
+
+          const effectiveLevel = Math.max(lowAvg * 0.85, overallAvg * 1.25);
+
+          // Update live breath meter
+          const pct = Math.min(100, Math.round((effectiveLevel / 65) * 100));
+          meterFill.style.width = `${pct}%`;
+          meterFill.style.backgroundColor = pct > 75 ? "#ff6b6b" : "#40c057";
+
+          if (effectiveLevel > 50) {
+            sustainedFrames++;
+          } else {
+            sustainedFrames = Math.max(0, sustainedFrames - 1);
+          }
+
+          if (sustainedFrames >= 3 && !candlesBlown) {
+            stopMicStream();
+            blowOutCandles();
+            return;
+          }
+
+          micAnimFrameId = requestAnimationFrame(detectBlow);
+        }
+
+        detectBlow();
+      } catch (err) {
+        console.warn("Mic access error:", err);
+        micStatusBar.classList.remove("active");
+        subTitle.textContent = "Mic blocked — tap 'Blow Candles' below or press Space! 💨";
+      }
+    }
+
+    function stopMicStream() {
+      if (micAnimFrameId) {
+        cancelAnimationFrame(micAnimFrameId);
+        micAnimFrameId = null;
+      }
+      if (activeStream) {
+        activeStream.getTracks().forEach((track) => track.stop());
+        activeStream = null;
+      }
+      if (audioCtx) {
+        audioCtx.close().catch(() => {});
+        audioCtx = null;
+      }
+      micStatusBar.classList.remove("active");
+      meterFill.style.width = "0%";
+    }
+
+    function spawnCandleSmoke(candle) {
+      const topY = candle.baseY - candle.h - 2;
+      for (let p = 0; p < 4; p++) {
+        smokeParticles.push({
+          x: candle.x + (Math.random() - 0.5) * 2,
+          y: topY - p * 2,
+          size: p === 0 ? 2 : 1,
+          age: p * 5
+        });
+      }
+    }
+
+    function blowOutCandles() {
+      if (candlesBlown) return;
+      candlesBlown = true;
+
+      initialControls.classList.add("hidden");
+
+      // Extinguish candles one by one with pixel smoke puffs
+      candlesState.forEach((candle, idx) => {
+        const delay = idx * 180 + Math.random() * 140;
+        setTimeout(() => {
+          candle.lit = false;
+          spawnCandleSmoke(candle);
+        }, delay);
+      });
+
+      const revealDelay = candlesState.length * 180 + 350;
+      setTimeout(() => {
+        subTitle.innerHTML = `<span style="color: #2b8a3e; font-weight: 700;">Yayy! All candles blown out! 🎉</span>`;
+        wishCard.classList.remove("hidden");
+        launchPixelConfetti();
+      }, revealDelay);
+    }
+
+    // === 5. Crisp Pixel Confetti Celebration ===
+    const confettiCanvas = document.getElementById("confettiCanvas");
+    const ctx = confettiCanvas.getContext("2d");
+    let confettiPieces = [];
+    let confettiActive = false;
+
+    function resizeCanvas() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function launchPixelConfetti() {
+      const palette = ["#ff6b6b", "#fcc2d7", "#ffd43b", "#69db7c", "#748ffc", "#f783ac"];
+      confettiPieces = [];
+      for (let i = 0; i < 100; i++) {
+        confettiPieces.push({
+          x: Math.random() * confettiCanvas.width,
+          y: -20 - Math.random() * 220,
+          size: Math.floor(Math.random() * 2 + 2) * 4,
+          color: palette[Math.floor(Math.random() * palette.length)],
+          vy: 2 + Math.random() * 3.5,
+          vx: (Math.random() - 0.5) * 3,
+          wobble: Math.random() * Math.PI * 2
+        });
+      }
+      if (!confettiActive) {
+        confettiActive = true;
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let stillVisible = false;
+
+      for (const p of confettiPieces) {
+        p.y += p.vy;
+        p.wobble += 0.08;
+        p.x += Math.sin(p.wobble) * 1.5 + p.vx;
+
+        if (p.y < confettiCanvas.height + 20) {
+          stillVisible = true;
+          ctx.fillStyle = p.color;
+          const pxX = Math.round(p.x / 4) * 4;
+          const pxY = Math.round(p.y / 4) * 4;
+          ctx.fillRect(pxX, pxY, p.size, p.size);
+        }
+      }
+
+      if (stillVisible) {
+        requestAnimationFrame(animateConfetti);
+      } else {
+        confettiActive = false;
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+  </script>
+</body>
+</html>
